@@ -1,24 +1,38 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Plus, Edit, Trash2, Search } from "lucide-react";
+import { Plus, Edit, Trash2 } from "lucide-react";
 
 export default function ManageAnime() {
+  const router = useRouter();
   const [animeList, setAnimeList] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  const fetchAnime = async () => {
+    const res = await fetch("/api/admin/anime");
+    if (res.ok) {
+      const data = await res.json();
+      setAnimeList(data);
+    }
+    setIsLoading(false);
+  };
+
   useEffect(() => {
-    const fetchAnime = async () => {
-      const res = await fetch("/api/admin/anime");
-      if (res.ok) {
-        const data = await res.json();
-        setAnimeList(data);
-      }
-      setIsLoading(false);
-    };
     fetchAnime();
   }, []);
+
+  const handleDelete = async (id) => {
+    if (!confirm("Are you sure you want to delete this anime? This will delete all its episodes too!")) return;
+    
+    const res = await fetch(`/api/admin/anime/${id}`, { method: "DELETE" });
+    if (res.ok) {
+      fetchAnime(); // Refresh list
+    } else {
+      alert("Failed to delete anime.");
+    }
+  };
 
   return (
     <div>
@@ -56,10 +70,10 @@ export default function ManageAnime() {
                   <td className="px-4 py-3">{anime.status || "N/A"}</td>
                   <td className="px-4 py-3">{anime.score || "N/A"}</td>
                   <td className="px-4 py-3 flex items-center justify-end gap-2">
-                    <button className="p-2 text-(--color-text-secondary) hover:text-(--color-gold-primary) transition-colors">
+                    <Link href={`/admin/anime/edit/${anime.id}`} className="p-2 text-(--color-text-secondary) hover:text-(--color-gold-primary) transition-colors">
                       <Edit size={16} />
-                    </button>
-                    <button className="p-2 text-(--color-text-secondary) hover:text-red-400 transition-colors">
+                    </Link>
+                    <button onClick={() => handleDelete(anime.id)} className="p-2 text-(--color-text-secondary) hover:text-red-400 transition-colors">
                       <Trash2 size={16} />
                     </button>
                   </td>

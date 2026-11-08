@@ -11,40 +11,14 @@ function VideoPlayer({ videoUrl }) {
   return (
     <div className="relative w-full aspect-video bg-black rounded-xl overflow-hidden group border border-(--color-border-custom)">
       <video
-        className="w-full h-full object-cover"
-        poster="https://storage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg"
+        className="w-full h-full object-contain"
+        controls // <-- This fixes the play button and controls natively!
         onClick={() => setIsPlaying(!isPlaying)}
-        autoPlay={false}
+        muted={isMuted}
       >
-        <source src={videoUrl || "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"} type="video/mp4" />
+        <source src={videoUrl} type="video/mp4" />
+        Your browser does not support the video tag.
       </video>
-
-      {!isPlaying && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/40">
-          <button onClick={() => setIsPlaying(true)} className="bg-(--color-gold-primary) hover:bg-(--color-gold-hover) text-(--color-bg-main) p-4 rounded-full transform transition-transform hover:scale-110">
-            <Play fill="currentColor" size={32} className="ml-1" />
-          </button>
-        </div>
-      )}
-
-      <div className="absolute bottom-0 left-0 right-0 bg-linear-to-t from-black/90 to-transparent p-4 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-        <div className="flex items-center gap-4">
-          <button onClick={() => setIsPlaying(!isPlaying)} className="text-white hover:text-(--color-gold-primary) transition-colors">
-            {isPlaying ? <Pause size={24} /> : <Play size={24} />}
-          </button>
-          <button onClick={() => setIsMuted(!isMuted)} className="text-white hover:text-(--color-gold-primary) transition-colors">
-            {isMuted ? <VolumeX size={24} /> : <Volume2 size={24} />}
-          </button>
-          <div className="w-24 md:w-64 h-1.5 bg-white/20 rounded-full cursor-pointer relative">
-            <div className="absolute top-0 left-0 h-full bg-(--color-gold-primary) rounded-full w-1/3"></div>
-            <div className="absolute top-1/2 -translate-y-1/2 left-1/3 w-3 h-3 bg-white rounded-full shadow"></div>
-          </div>
-          <span className="text-white text-xs font-medium hidden sm:block">10:45 / 24:00</span>
-        </div>
-        <button className="text-white hover:text-(--color-gold-primary) transition-colors">
-          <Maximize size={20} />
-        </button>
-      </div>
     </div>
   );
 }
@@ -61,6 +35,8 @@ export default function WatchUI({ episodeId, animeSlug, currentEpNum, formattedT
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         <div className="lg:col-span-3 flex flex-col gap-4">
+          
+          {/* Real Video Player */}
           <VideoPlayer videoUrl={videoUrl} />
 
           <div className="flex flex-wrap items-center justify-between gap-4 bg-(--color-bg-card) border border-(--color-border-custom) p-4 rounded-xl">
