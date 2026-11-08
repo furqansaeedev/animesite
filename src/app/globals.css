@@ -1,0 +1,46 @@
+@import "tailwindcss";
+
+@theme inline {
+  /* AIME Color Palette */
+  --color-bg-main: #0B0D19;
+  --color-bg-header: #080A16;
+  --color-bg-secondary: #121528;
+  --color-bg-card: #171B30;
+  
+  --color-gold-primary: #C9A44C;
+  --color-gold-hover: #E0BD68;
+  
+  --color-text-primary: #F5F2E9;
+  --color-text-secondary: #A3A6B5;
+  
+  --color-border-custom: #343044;
+
+  /* Font setup */
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+/* Base Body Styles */
+body {
+  background-color: var(--color-bg-main);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans), Arial, sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Custom Scrollbar for a premium feel */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-bg-main);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-border-custom);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-gold-primary);
+}
