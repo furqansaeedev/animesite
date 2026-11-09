@@ -8,9 +8,8 @@ export default function AnimeFilters() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // Initialize state from current URL
+  // Initialize state from URL
   const [search, setSearch] = useState(searchParams.get("search") || "");
-  const [genre, setGenre] = useState(searchParams.get("genre") || "");
   const [type, setType] = useState(searchParams.get("type") || "");
   const [sort, setSort] = useState(searchParams.get("sort") || "recent");
 
@@ -18,16 +17,15 @@ export default function AnimeFilters() {
     e.preventDefault();
     const params = new URLSearchParams();
     if (search) params.set("search", search);
-    if (genre) params.set("genre", genre);
     if (type) params.set("type", type);
     if (sort) params.set("sort", sort);
     
     router.push(`/anime?${params.toString()}`);
+    // Do NOT clear the search state here
   };
 
   const handleReset = () => {
     setSearch("");
-    setGenre("");
     setType("");
     setSort("recent");
     router.push("/anime");

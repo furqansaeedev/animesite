@@ -13,10 +13,29 @@ export default function RegisterPage() {
   const [success, setSuccess] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
+  // Strict Email Regex for Frontend
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setSuccess("");
+
+    // 1. Validate Email Format
+    if (!emailRegex.test(formData.email)) {
+      return setError("Please enter a valid email address (e.g., name@gmail.com).");
+    }
+
+    // 2. Validate Password Length (Exactly 8)
+    if (formData.password.length !== 8) {
+      return setError("Password must be exactly 8 characters long.");
+    }
+
+    // 3. Validate Special Character
+    if (!/[^a-zA-Z0-9]/.test(formData.password)) {
+      return setError("Password must contain at least one special character (e.g., @, #, $).");
+    }
+
     setIsLoading(true);
 
     try {
@@ -32,10 +51,8 @@ export default function RegisterPage() {
         throw new Error(data.error || "Something went wrong");
       }
 
-      // Show success message
       setSuccess("Account created! Redirecting to login...");
       
-      // Wait 1.5 seconds so the user can read the message, then redirect to login
       setTimeout(() => {
         router.push("/login");
       }, 1500);
@@ -94,7 +111,7 @@ export default function RegisterPage() {
             <div className="relative">
               <input 
                 type="email" 
-                placeholder="you@example.com" 
+                placeholder="you@gmail.com" 
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 className="w-full bg-(--color-bg-secondary) text-(--color-text-primary) text-sm rounded-lg py-3 pl-10 pr-4 border border-(--color-border-custom) focus:outline-none focus:border-(--color-gold-primary) transition-colors"
@@ -110,7 +127,7 @@ export default function RegisterPage() {
             <div className="relative">
               <input 
                 type={showPassword ? "text" : "password"} 
-                placeholder="••••••••" 
+                placeholder="Exactly 8 chars & 1 special (@, #, $)" 
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 className="w-full bg-(--color-bg-secondary) text-(--color-text-primary) text-sm rounded-lg py-3 pl-10 pr-10 border border-(--color-border-custom) focus:outline-none focus:border-(--color-gold-primary) transition-colors"

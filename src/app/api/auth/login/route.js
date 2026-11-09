@@ -5,8 +5,9 @@ import { prisma } from "@/lib/prisma";
 import { setSession } from "@/lib/auth";
 
 const loginSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(1),
+  // Strict email validation
+  email: z.string().regex(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/, "Invalid email format"),
+  password: z.string().min(1, "Password is required"),
 });
 
 export async function POST(request) {
@@ -16,7 +17,7 @@ export async function POST(request) {
     // Validate
     const result = loginSchema.safeParse(body);
     if (!result.success) {
-      return NextResponse.json({ error: "Invalid data provided" }, { status: 400 });
+      return NextResponse.json({ error: result.error.errors[0].message }, { status: 400 });
     }
 
     const { email, password } = result.data;

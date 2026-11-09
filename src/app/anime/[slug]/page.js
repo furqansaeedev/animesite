@@ -2,7 +2,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { notFound } from "next/navigation";
-import { Play, Share2, Star, Calendar, Clock, Film, CheckCircle } from "lucide-react";
+import { Play, Star, Calendar, Clock, Film, CheckCircle } from "lucide-react";
 import ActionButtons from "./ActionButtons";
 
 export default async function AnimeDetails({ params }) {
@@ -55,6 +55,7 @@ export default async function AnimeDetails({ params }) {
       </div>
 
       <div className="relative z-20 px-4 md:px-8 flex flex-col md:flex-row gap-6 md:gap-8 max-w-6xl mx-auto w-full">
+        {/* Poster */}
         <div className="w-40 md:w-56 shrink-0 mx-auto md:mx-0 rounded-xl overflow-hidden border-2 border-(--color-border-custom) shadow-2xl bg-(--color-bg-card) aspect-2/3">
            {anime.posterUrl ? (
              <img src={anime.posterUrl} alt={anime.title} className="w-full h-full object-cover" />
@@ -63,6 +64,7 @@ export default async function AnimeDetails({ params }) {
            )}
         </div>
 
+        {/* Details Info */}
         <div className="flex-1 flex flex-col pt-2 md:pt-8">
           <h1 className="text-2xl md:text-4xl font-extrabold text-(--color-text-primary) text-center md:text-left mb-2">
             {anime.title}
@@ -86,15 +88,18 @@ export default async function AnimeDetails({ params }) {
             ))}
           </div>
 
-          {/* Action Buttons - Watch Now + Watchlist + Favorite */}
-          <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mb-6">
-            <Link href={`/watch/${anime.slug}-episode-1`} className="flex items-center gap-2 bg-(--color-gold-primary) hover:bg-(--color-gold-hover) text-(--color-bg-main) font-bold py-2 px-8 rounded-full transition-colors">
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row items-center justify-center md:justify-start gap-3 mb-6">
+            
+            {/* Watch Now Button */}
+            <Link href={`/watch/${anime.slug}-episode-1`} className="flex items-center gap-2 bg-(--color-gold-primary) hover:bg-(--color-gold-hover) text-(--color-bg-main) font-bold h-12 px-8 rounded-full transition-colors w-full sm:w-auto justify-center">
               <Play fill="currentColor" size={18} /> Watch Now
             </Link>
             
-            {/* We replaced the static buttons with our new Client Component */}
+            {/* Watchlist, Favorite, and Share Buttons */}
             <ActionButtons 
               animeId={anime.id} 
+              animeSlug={anime.slug}
               initialWatchlist={isInWatchlist} 
               initialFavorite={isFavorite} 
             />
@@ -148,10 +153,6 @@ export default async function AnimeDetails({ params }) {
             <li className="flex justify-between border-b border-(--color-bg-secondary) pb-2">
               <span className="text-(--color-text-secondary)">Release Year</span>
               <span className="text-(--color-text-primary) font-medium">{anime.releaseYear || "Unknown"}</span>
-            </li>
-            <li className="flex justify-between pb-1">
-              <span className="text-(--color-text-secondary)">Share</span>
-              <button className="text-(--color-text-primary) hover:text-(--color-gold-primary) transition-colors"><Share2 size={16} /></button>
             </li>
           </ul>
         </div>

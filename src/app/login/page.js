@@ -12,9 +12,18 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
+  // Strict Email Regex
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+
+    // Validate email before sending
+    if (!emailRegex.test(formData.email)) {
+      return setError("Please enter a valid email address.");
+    }
+
     setIsLoading(true);
 
     try {

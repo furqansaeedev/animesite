@@ -5,15 +5,17 @@ import { prisma } from "@/lib/prisma";
 
 const registerSchema = z.object({
   displayName: z.string().min(2, "Name must be at least 2 characters"),
-  email: z.string().email("Invalid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
+  // Stricter email validation: must have text, @, text, ., and at least 2 letters
+  email: z.string().regex(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/, "Please enter a valid email address"),
+  password: z.string()
+    .length(8, "Password must be exactly 8 characters")
+    .regex(/[^a-zA-Z0-9]/, "Password must contain at least one special character (e.g. @, #, $, !)"),
 });
 
 export async function POST(request) {
   try {
     const body = await request.json();
     
-    // Validate the incoming data
     const result = registerSchema.safeParse(body);
     if (!result.success) {
       return NextResponse.json({ error: result.error.errors[0].message }, { status: 400 });
@@ -21,16 +23,13 @@ export async function POST(request) {
 
     const { displayName, email, password } = result.data;
 
-    // Check if user already exists
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {
       return NextResponse.json({ error: "Email is already registered" }, { status: 400 });
     }
 
-    // Hash the password
     const passwordHash = await bcrypt.hash(password, 10);
 
-    // Create the user and their profile/settings in the database
     await prisma.user.create({
       data: {
         email,
@@ -44,7 +43,6 @@ export async function POST(request) {
       },
     });
 
-    // Return success WITHOUT setting the session cookie
     return NextResponse.json({ success: true, message: "Registered successfully" }, { status: 201 });
 
   } catch (error) {
