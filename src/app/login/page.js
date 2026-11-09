@@ -1,29 +1,31 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Play, Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { Play, Mail, Lock, Eye, EyeOff, CheckCircle2, AlertCircle } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [notification, setNotification] = useState({ type: "", text: "" });
 
-  // Strict Email Regex
-  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  // Check URL for verification messages
+  useEffect(() => {
+    if (searchParams.get("verified") === "true") {
+      setNotification({ type: "success", text: "Email verified successfully! You can now log in." });
+    } else if (searchParams.get("error")) {
+      setNotification({ type: "error", text: "Email verification failed. Please try registering again." });
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-
-    // Validate email before sending
-    if (!emailRegex.test(formData.email)) {
-      return setError("Please enter a valid email address.");
-    }
-
     setIsLoading(true);
 
     try {
@@ -39,10 +41,8 @@ export default function LoginPage() {
         throw new Error(data.error || "Failed to login");
       }
 
-      // Login successful, redirect to home
       router.push("/");
       router.refresh(); 
-
     } catch (err) {
       setError(err.message);
     } finally {
@@ -60,8 +60,14 @@ export default function LoginPage() {
             <span className="text-2xl font-bold text-(--color-gold-primary) tracking-wider">AIME</span>
           </Link>
           <h1 className="text-2xl font-bold text-(--color-text-primary)">Welcome Back</h1>
-          <p className="text-sm text-(--color-text-secondary) mt-2">Sign in to continue watching</p>
         </div>
+
+        {notification.text && (
+          <div className={`p-3 rounded-lg mb-4 text-sm text-center flex items-center justify-center gap-2 ${notification.type === "success" ? "bg-green-500/10 border border-green-500/50 text-green-500" : "bg-red-500/10 border border-red-500/50 text-red-500"}`}>
+            {notification.type === "success" ? <CheckCircle2 size={18} /> : <AlertCircle size={18} />}
+            {notification.text}
+          </div>
+        )}
 
         {error && (
           <div className="bg-red-500/10 border border-red-500/50 text-red-500 text-sm p-3 rounded-lg mb-4 text-center">

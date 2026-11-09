@@ -13,8 +13,8 @@ export default function RegisterPage() {
   const [success, setSuccess] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  // Strict Email Regex for Frontend
   const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  const allowedDomains = ["gmail.com", "yahoo.com", "outlook.com", "hotmail.com", "icloud.com"];
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -23,15 +23,21 @@ export default function RegisterPage() {
 
     // 1. Validate Email Format
     if (!emailRegex.test(formData.email)) {
-      return setError("Please enter a valid email address (e.g., name@gmail.com).");
+      return setError("Please enter a valid email address format.");
     }
 
-    // 2. Validate Password Length (Exactly 8)
+    // 2. Validate Domain
+    const domain = formData.email.split("@")[1]?.toLowerCase();
+    if (!allowedDomains.includes(domain)) {
+      return setError("Please use a valid email provider (e.g., @gmail.com, @yahoo.com).");
+    }
+
+    // 3. Validate Password Length (Exactly 8)
     if (formData.password.length !== 8) {
       return setError("Password must be exactly 8 characters long.");
     }
 
-    // 3. Validate Special Character
+    // 4. Validate Special Character
     if (!/[^a-zA-Z0-9]/.test(formData.password)) {
       return setError("Password must contain at least one special character (e.g., @, #, $).");
     }

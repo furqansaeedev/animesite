@@ -1,29 +1,29 @@
 generator client {
   provider = "prisma-client-js"
-  output   = "../src/generated/prisma"
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 // --- USER & AUTH MODELS ---
 model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
-  passwordHash  String
-  role          String    @default("USER") // "USER" or "ADMIN"
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id                String    @id @default(cuid())
+  email             String    @unique
+  passwordHash      String
+  role              String    @default("USER") // "USER" or "ADMIN"
+  isVerified        Boolean   @default(false) // <-- Added for email verification
+  verificationToken String?   @unique         // <-- Added for email verification
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 
-  profile       Profile?
-  settings      UserSettings?
-  watchlist     Watchlist[]
-  favorites     Favorite[]
-  progress      WatchProgress[]
-  resetTokens   PasswordResetToken[]
+  profile           Profile?
+  settings          UserSettings?
+  watchlist         Watchlist[]
+  favorites         Favorite[]
+  progress          WatchProgress[]
+  resetTokens       PasswordResetToken[]
 }
 
 model Profile {
