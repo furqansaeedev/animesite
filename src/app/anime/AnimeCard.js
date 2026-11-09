@@ -12,14 +12,12 @@ export default function AnimeCard({ anime }) {
              alt={anime.title}
              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
              loading="lazy"
-             onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }}
            />
-        ) : null}
-        
-        {/* Fallback if image fails or is missing */}
-        <div className={`absolute inset-0 flex items-center justify-center bg-(--color-bg-secondary) ${anime.posterUrl ? 'hidden' : 'flex'}`}>
-            <Play size={32} className="text-(--color-border-custom)" />
-        </div>
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center">
+              <span className="text-(--color-text-secondary) text-sm">No Image</span>
+          </div>
+        )}
         
         <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center z-10">
           <div className="bg-(--color-gold-primary) text-(--color-bg-main) p-3 rounded-full transform scale-50 group-hover:scale-100 transition-transform duration-300">

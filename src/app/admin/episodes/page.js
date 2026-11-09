@@ -8,17 +8,28 @@ export default function ManageEpisodes() {
   const [episodes, setEpisodes] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  const fetchEpisodes = async () => {
+    const res = await fetch("/api/admin/episodes");
+    if (res.ok) {
+      const data = await res.json();
+      setEpisodes(data);
+    }
+    setIsLoading(false);
+  };
+
   useEffect(() => {
-    const fetchEpisodes = async () => {
-      const res = await fetch("/api/admin/episodes");
-      if (res.ok) {
-        const data = await res.json();
-        setEpisodes(data);
-      }
-      setIsLoading(false);
-    };
     fetchEpisodes();
   }, []);
+
+  const handleDelete = async (id) => {
+    // No confirmation popup. Deletes instantly.
+    const res = await fetch(`/api/admin/episodes/${id}`, { method: "DELETE" });
+    if (res.ok) {
+      fetchEpisodes(); // Refresh the list
+    } else {
+      alert("Failed to delete episode.");
+    }
+  };
 
   return (
     <div>
@@ -56,10 +67,10 @@ export default function ManageEpisodes() {
                   <td className="px-4 py-3">{ep.title || "N/A"}</td>
                   <td className="px-4 py-3 text-xs text-(--color-text-secondary) truncate max-w-50">{ep.videoUrl || "N/A"}</td>
                   <td className="px-4 py-3 flex items-center justify-end gap-2">
-                    <button className="p-2 text-(--color-text-secondary) hover:text-(--color-gold-primary) transition-colors">
+                    <Link href={`/admin/episodes/edit/${ep.id}`} className="p-2 text-(--color-text-secondary) hover:text-(--color-gold-primary) transition-colors">
                       <Edit size={16} />
-                    </button>
-                    <button className="p-2 text-(--color-text-secondary) hover:text-red-400 transition-colors">
+                    </Link>
+                    <button onClick={() => handleDelete(ep.id)} className="p-2 text-(--color-text-secondary) hover:text-red-400 transition-colors">
                       <Trash2 size={16} />
                     </button>
                   </td>

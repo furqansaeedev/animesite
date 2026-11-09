@@ -13,8 +13,8 @@ export default function AddAnimePage() {
   const [formData, setFormData] = useState({
     title: "",
     synopsis: "",
-    posterUrl: "", // Added
-    bannerUrl: "", // Added
+    posterUrl: "",
+    bannerUrl: "",
     type: "TV",
     status: "Finished Airing",
     releaseYear: new Date().getFullYear(),
@@ -101,30 +101,39 @@ export default function AddAnimePage() {
           />
         </div>
 
-        {/* Images */}
+        {/* Images Area */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          
           <div>
-            <label className="block text-sm font-medium text-(--color-text-primary) mb-2">Poster Image URL</label>
+            <label className="block text-sm font-medium text-(--color-text-primary) mb-2">
+              Poster Image URL <span className="text-(--color-text-secondary) font-normal">(Local or Web)</span>
+            </label>
             <input 
-              type="url" 
+              type="text" 
               name="posterUrl" 
               value={formData.posterUrl} 
               onChange={handleChange}
               className="w-full bg-(--color-bg-secondary) text-(--color-text-primary) text-sm rounded-lg py-3 px-4 border border-(--color-border-custom) focus:outline-none focus:border-(--color-gold-primary) transition-colors"
-              placeholder="https://example.com/poster.jpg"
+              placeholder="e.g. /solo-leveling.jpg OR https://..."
             />
+            <p className="text-xs text-(--color-text-secondary) mt-1">For local files, put the image in the 'public' folder and type '/filename.jpg'</p>
           </div>
+
           <div>
-            <label className="block text-sm font-medium text-(--color-text-primary) mb-2">Banner Image URL</label>
+            <label className="block text-sm font-medium text-(--color-text-primary) mb-2">
+              Banner Image URL <span className="text-(--color-text-secondary) font-normal">(Local or Web)</span>
+            </label>
             <input 
-              type="url" 
+              type="text" 
               name="bannerUrl" 
               value={formData.bannerUrl} 
               onChange={handleChange}
               className="w-full bg-(--color-bg-secondary) text-(--color-text-primary) text-sm rounded-lg py-3 px-4 border border-(--color-border-custom) focus:outline-none focus:border-(--color-gold-primary) transition-colors"
-              placeholder="https://example.com/banner.jpg"
+              placeholder="e.g. /solo-banner.jpg OR https://..."
             />
+             <p className="text-xs text-(--color-text-secondary) mt-1">Leave empty to use a blurred version of the poster instead.</p>
           </div>
+
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

@@ -16,10 +16,14 @@ export default function AddEpisodePage() {
     episodeNumber: 1,
     title: "",
     videoUrl: "",
-    thumbnail: "",
+    dl1080p: "",
+    dl720p: "",
+    dl480p: "",
+    size1080p: "1.2 GB",
+    size720p: "650 MB",
+    size480p: "350 MB",
   });
 
-  // Fetch anime list to populate the dropdown
   useEffect(() => {
     const fetchAnime = async () => {
       const res = await fetch("/api/admin/anime");
@@ -90,7 +94,6 @@ export default function AddEpisodePage() {
       ) : (
         <form onSubmit={handleSubmit} className="flex flex-col gap-6">
           
-          {/* Anime Select */}
           <div>
             <label className="block text-sm font-medium text-(--color-text-primary) mb-2">Select Anime</label>
             <select 
@@ -107,54 +110,74 @@ export default function AddEpisodePage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Episode Number */}
             <div>
               <label className="block text-sm font-medium text-(--color-text-primary) mb-2">Episode Number</label>
               <input 
-                type="number" 
-                name="episodeNumber" 
-                value={formData.episodeNumber} 
-                onChange={handleChange}
-                min="1"
+                type="number" name="episodeNumber" value={formData.episodeNumber} onChange={handleChange} min="1"
                 className="w-full bg-(--color-bg-secondary) text-(--color-text-primary) text-sm rounded-lg py-3 px-4 border border-(--color-border-custom) focus:outline-none focus:border-(--color-gold-primary) transition-colors"
                 required
               />
             </div>
 
-            {/* Episode Title */}
             <div>
               <label className="block text-sm font-medium text-(--color-text-primary) mb-2">Episode Title (Optional)</label>
               <input 
-                type="text" 
-                name="title" 
-                value={formData.title} 
-                onChange={handleChange}
+                type="text" name="title" value={formData.title} onChange={handleChange}
                 className="w-full bg-(--color-bg-secondary) text-(--color-text-primary) text-sm rounded-lg py-3 px-4 border border-(--color-border-custom) focus:outline-none focus:border-(--color-gold-primary) transition-colors"
                 placeholder="e.g. The Awakening"
               />
             </div>
           </div>
 
-          {/* Video URL */}
           <div>
-            <label className="block text-sm font-medium text-(--color-text-primary) mb-2">Video URL (MP4 link)</label>
+            <label className="block text-sm font-medium text-(--color-text-primary) mb-2">Video URL (For the Watch Page)</label>
             <input 
-              type="url" 
-              name="videoUrl" 
-              value={formData.videoUrl} 
-              onChange={handleChange}
+              type="text" name="videoUrl" value={formData.videoUrl} onChange={handleChange}
               className="w-full bg-(--color-bg-secondary) text-(--color-text-primary) text-sm rounded-lg py-3 px-4 border border-(--color-border-custom) focus:outline-none focus:border-(--color-gold-primary) transition-colors"
-              placeholder="https://example.com/video.mp4"
+              placeholder="e.g. https://u.pone.rs/podmbdrl.mp4"
+              required
             />
           </div>
 
-          {/* Submit */}
+          <div className="mt-6 border-t border-(--color-border-custom) pt-6">
+            <h3 className="text-lg font-bold text-(--color-gold-primary) mb-4">Download Links (Optional)</h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div>
+                <label className="block text-sm font-medium text-(--color-text-primary) mb-2">1080p Link</label>
+                <input type="text" name="dl1080p" value={formData.dl1080p} onChange={handleChange} className="w-full bg-(--color-bg-secondary) text-(--color-text-primary) text-sm rounded-lg py-3 px-4 border border-(--color-border-custom)" placeholder="https://..." />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-(--color-text-primary) mb-2">1080p Size</label>
+                <input type="text" name="size1080p" value={formData.size1080p} onChange={handleChange} className="w-full bg-(--color-bg-secondary) text-(--color-text-primary) text-sm rounded-lg py-3 px-4 border border-(--color-border-custom)" />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div>
+                <label className="block text-sm font-medium text-(--color-text-primary) mb-2">720p Link</label>
+                <input type="text" name="dl720p" value={formData.dl720p} onChange={handleChange} className="w-full bg-(--color-bg-secondary) text-(--color-text-primary) text-sm rounded-lg py-3 px-4 border border-(--color-border-custom)" placeholder="https://..." />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-(--color-text-primary) mb-2">720p Size</label>
+                <input type="text" name="size720p" value={formData.size720p} onChange={handleChange} className="w-full bg-(--color-bg-secondary) text-(--color-text-primary) text-sm rounded-lg py-3 px-4 border border-(--color-border-custom)" />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div>
+                <label className="block text-sm font-medium text-(--color-text-primary) mb-2">480p Link</label>
+                <input type="text" name="dl480p" value={formData.dl480p} onChange={handleChange} className="w-full bg-(--color-bg-secondary) text-(--color-text-primary) text-sm rounded-lg py-3 px-4 border border-(--color-border-custom)" placeholder="https://..." />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-(--color-text-primary) mb-2">480p Size</label>
+                <input type="text" name="size480p" value={formData.size480p} onChange={handleChange} className="w-full bg-(--color-bg-secondary) text-(--color-text-primary) text-sm rounded-lg py-3 px-4 border border-(--color-border-custom)" />
+              </div>
+            </div>
+          </div>
+
           <div className="flex justify-end mt-4">
-            <button 
-              type="submit" 
-              disabled={isSaving}
-              className="flex items-center gap-2 bg-(--color-gold-primary) hover:bg-(--color-gold-hover) text-(--color-bg-main) font-bold py-3 px-8 rounded-lg transition-colors disabled:opacity-50"
-            >
+            <button type="submit" disabled={isSaving} className="flex items-center gap-2 bg-(--color-gold-primary) hover:bg-(--color-gold-hover) text-(--color-bg-main) font-bold py-3 px-8 rounded-lg transition-colors disabled:opacity-50">
               <Save size={18} />
               {isSaving ? "Saving..." : "Save Episode"}
             </button>

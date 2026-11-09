@@ -24,11 +24,10 @@ export default function ManageAnime() {
   }, []);
 
   const handleDelete = async (id) => {
-    if (!confirm("Are you sure you want to delete this anime? This will delete all its episodes too!")) return;
-    
+    // No confirmation popup. Deletes instantly.
     const res = await fetch(`/api/admin/anime/${id}`, { method: "DELETE" });
     if (res.ok) {
-      fetchAnime(); // Refresh list
+      fetchAnime(); // Refresh the list
     } else {
       alert("Failed to delete anime.");
     }
@@ -70,9 +69,11 @@ export default function ManageAnime() {
                   <td className="px-4 py-3">{anime.status || "N/A"}</td>
                   <td className="px-4 py-3">{anime.score || "N/A"}</td>
                   <td className="px-4 py-3 flex items-center justify-end gap-2">
+                    {/* Edit Button - Links to edit page */}
                     <Link href={`/admin/anime/edit/${anime.id}`} className="p-2 text-(--color-text-secondary) hover:text-(--color-gold-primary) transition-colors">
                       <Edit size={16} />
                     </Link>
+                    {/* Delete Button - Deletes instantly */}
                     <button onClick={() => handleDelete(anime.id)} className="p-2 text-(--color-text-secondary) hover:text-red-400 transition-colors">
                       <Trash2 size={16} />
                     </button>

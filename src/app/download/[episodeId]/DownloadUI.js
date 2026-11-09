@@ -6,14 +6,13 @@ import { Download, ChevronLeft, HardDrive, CheckCircle2, AlertCircle } from "luc
 
 export default function DownloadUI({ episodeId, formattedTitle, currentEpNum, downloadUrls }) {
   
-  // If you haven't set up downloadUrls in your DB yet, we use this default mock list.
-  // Later, you can map over `downloadUrls` from the database instead.
+  // Read real data from the database.
   const qualities = [
-    { label: "1080p", size: "1.2 GB", available: true, url: downloadUrls?.["1080p"] || "#" },
-    { label: "720p", size: "650 MB", available: true, url: downloadUrls?.["720p"] || "#" },
-    { label: "480p", size: "350 MB", available: true, url: downloadUrls?.["480p"] || "#" },
-    { label: "360p", size: "180 MB", available: true, url: downloadUrls?.["360p"] || "#" },
-    { label: "240p", size: "90 MB", available: false, url: "#" }, // Example of unavailable
+    { label: "1080p", size: downloadUrls?.["1080p"]?.size || "N/A", available: !!downloadUrls?.["1080p"]?.url, url: downloadUrls?.["1080p"]?.url || "" },
+    { label: "720p", size: downloadUrls?.["720p"]?.size || "N/A", available: !!downloadUrls?.["720p"]?.url, url: downloadUrls?.["720p"]?.url || "" },
+    { label: "480p", size: downloadUrls?.["480p"]?.size || "N/A", available: !!downloadUrls?.["480p"]?.url, url: downloadUrls?.["480p"]?.url || "" },
+    { label: "360p", size: "N/A", available: false, url: "" },
+    { label: "240p", size: "N/A", available: false, url: "" },
   ];
 
   const [selectedQuality, setSelectedQuality] = useState(null);
@@ -22,54 +21,64 @@ export default function DownloadUI({ episodeId, formattedTitle, currentEpNum, do
 
   const handleDownload = () => {
     if (!selectedQuality) return;
-    setDownloadState("preparing");
     
-    // Simulate preparing download
-    setTimeout(() => {
-      setDownloadState("downloading");
-      
-      // Simulate download progress
-      let currentProgress = 0;
-      const interval = setInterval(() => {
-        currentProgress += 5;
-        setProgress(currentProgress);
-        if (currentProgress >= 100) {
-          clearInterval(interval);
-          setDownloadState("completed");
-          
-          // In a real app, you would trigger the actual file download here
-          // window.location.href = qualities.find(q => q.label === selectedQuality).url;
-        }
-      }, 200);
-    }, 1000);
+    const qualityData = qualities.find(q => q.label === selectedQuality);
+    if (!qualityData || !qualityData.url) return;
+
+    setDownloadState("downloading");
+    setProgress(10);
+
+    // Use an anchor tag to trigger the download. 
+    // This bypasses the CORS error.
+    const a = document.createElement("a");
+    a.href = qualityData.url;
+    a.download = `${formattedTitle}-Episode-${currentEpNum}-${selectedQuality}.mp4`;
+    a.target = "_blank"; // Opens in a new tab if the server blocks direct downloads
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+
+    // Show a fake progress bar just to give the user visual feedback
+    let currentProgress = 10;
+    const interval = setInterval(() => {
+      currentProgress += 15;
+      if (currentProgress >= 100) {
+        currentProgress = 100;
+        clearInterval(interval);
+        setDownloadState("completed");
+      }
+      setProgress(currentProgress);
+    }, 200);
+  };
+
+  const resetDownload = () => {
+    setDownloadState("idle");
+    setProgress(0);
+    setSelectedQuality(null);
   };
 
   return (
     <div className="flex flex-col w-full min-h-[80vh] items-center justify-center py-10 px-4">
       
-      {/* Back Button */}
       <div className="w-full max-w-2xl mb-4">
         <Link href={`/watch/${episodeId}`} className="text-sm font-medium text-(--color-text-secondary) hover:text-(--color-gold-primary) transition-colors flex items-center gap-1">
           <ChevronLeft size={16} /> Back to Player
         </Link>
       </div>
 
-      {/* Main Download Panel */}
       <div className="w-full max-w-2xl bg-(--color-bg-card) border border-(--color-border-custom) rounded-2xl p-6 md:p-8 shadow-2xl">
         
-        {/* Header */}
         <div className="text-center mb-8 border-b border-(--color-border-custom) pb-6">
           <h1 className="text-2xl md:text-3xl font-extrabold text-(--color-text-primary) mb-2">{formattedTitle}</h1>
           <p className="text-(--color-gold-primary) font-bold">Episode {currentEpNum}</p>
           <h2 className="text-lg text-(--color-text-secondary) mt-4">Select Quality to Download</h2>
         </div>
 
-        {/* Quality Selection */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8">
           {qualities.map((q) => (
             <button
               key={q.label}
-              disabled={!q.available || downloadState !== "idle" && downloadState !== "completed"}
+              disabled={!q.available || downloadState === "downloading" || downloadState === "completed"}
               onClick={() => setSelectedQuality(q.label)}
               className={`relative flex items-center justify-between p-4 rounded-xl border-2 transition-all ${
                 !q.available
@@ -101,9 +110,8 @@ export default function DownloadUI({ episodeId, formattedTitle, currentEpNum, do
           ))}
         </div>
 
-        {/* Action / Progress Area */}
         <div className="flex flex-col gap-4">
-          {downloadState === "idle" || downloadState === "completed" ? (
+          {downloadState === "idle" ? (
             <button
               onClick={handleDownload}
               disabled={!selectedQuality}
@@ -114,33 +122,37 @@ export default function DownloadUI({ episodeId, formattedTitle, currentEpNum, do
               }`}
             >
               <Download size={20} />
-              {downloadState === "completed" ? "Download Again" : "Start Download"}
+              Start Download
             </button>
+          ) : downloadState === "completed" ? (
+            <div className="flex flex-col gap-3">
+              <div className="w-full flex items-center justify-center gap-2 bg-green-500/10 border border-green-500/50 text-green-500 font-bold py-3 rounded-xl">
+                <CheckCircle2 size={20} /> Download Initiated
+              </div>
+              <button onClick={resetDownload} className="text-sm text-(--color-text-secondary) hover:text-(--color-gold-primary) underline">
+                Download another quality
+              </button>
+            </div>
           ) : (
             <div className="w-full bg-(--color-bg-secondary) border border-(--color-border-custom) rounded-xl p-5 flex flex-col gap-2">
               <div className="flex justify-between text-sm font-bold">
-                <span className="text-(--color-gold-primary)">
-                  {downloadState === "preparing" ? "Preparing download..." : "Downloading..."}
-                </span>
+                <span className="text-(--color-gold-primary)">Downloading...</span>
                 <span className="text-(--color-text-primary)">{progress}%</span>
               </div>
               
               <div className="w-full h-3 bg-(--color-border-custom) rounded-full overflow-hidden">
                 <div className="h-full bg-(--color-gold-primary) transition-all duration-200" style={{ width: `${progress}%` }} />
               </div>
-              
-              <div className="flex justify-between text-xs text-(--color-text-secondary) mt-1">
-                <span>Status: {downloadState}</span>
-                <span>{Math.floor((progress / 100) * parseInt(selectedQuality))} MB / {qualities.find(q => q.label === selectedQuality)?.size}</span>
-              </div>
+              <p className="text-xs text-(--color-text-secondary) mt-2">
+                If the download does not start automatically, check your browser's downloads folder.
+              </p>
             </div>
           )}
         </div>
 
-        {/* Notice */}
         <div className="mt-8 bg-(--color-bg-secondary) border border-(--color-border-custom) rounded-lg p-4 flex gap-3 text-xs text-(--color-text-secondary)">
           <AlertCircle className="shrink-0 text-(--color-gold-primary)" size={18} />
-          <p><strong>Notice:</strong> Higher video qualities may require more bandwidth. File sizes vary depending on the episode and quality. Availability depends on the authorized source. This is a simulated download interface for demonstration purposes.</p>
+          <p><strong>Notice:</strong> File sizes vary depending on the episode and quality. Availability depends on the authorized source.</p>
         </div>
 
       </div>

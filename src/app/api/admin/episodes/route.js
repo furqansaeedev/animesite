@@ -9,7 +9,6 @@ async function checkAdmin() {
   return true;
 }
 
-// GET all episodes
 export async function GET() {
   if (!(await checkAdmin())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
@@ -20,34 +19,32 @@ export async function GET() {
   return NextResponse.json(episodes);
 }
 
-// Schema for creating an episode
-const episodeSchema = z.object({
-  animeId: z.string(),
-  episodeNumber: z.number().min(1),
-  title: z.string().optional(),
-  videoUrl: z.string().url("Must be a valid URL").optional().or(z.literal("")),
-  thumbnail: z.string().url().optional().or(z.literal("")),
-});
-
-// POST create episode
 export async function POST(request) {
   if (!(await checkAdmin())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {
     const body = await request.json();
-    const result = episodeSchema.safeParse(body);
     
-    if (!result.success) {
-      return NextResponse.json({ error: result.error.errors[0].message }, { status: 400 });
-    }
+    // Package download links into JSON format for the database
+    const downloadUrls = {
+      "1080p": { url: body.dl1080p || "", size: body.size1080p || "" },
+      "720p": { url: body.dl720p || "", size: body.size720p || "" },
+      "480p": { url: body.dl480p || "", size: body.size480p || "" },
+    };
 
     const newEpisode = await prisma.episode.create({
-      data: result.data
+      data: {
+        animeId: body.animeId,
+        episodeNumber: Number(body.episodeNumber),
+        title: body.title,
+        videoUrl: body.videoUrl,
+        downloadUrls: downloadUrls,
+      }
     });
 
     return NextResponse.json(newEpisode, { status: 201 });
   } catch (error) {
-    console.error(error);
-    return NextResponse.json({ error: "Internal Server Error (Maybe duplicate episode number?)" }, { status: 500 });
+    console.error("Episode API Error:", error);
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }

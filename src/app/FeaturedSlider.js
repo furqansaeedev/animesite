@@ -7,15 +7,15 @@ import { Play, Info, ChevronLeft, ChevronRight } from "lucide-react";
 export default function FeaturedSlider({ featuredAnime }) {
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  // Auto-transition every 5 seconds
   useEffect(() => {
+    if (!featuredAnime || featuredAnime.length === 0) return;
     const timer = setInterval(() => {
       setCurrentIndex((prevIndex) => 
         prevIndex === featuredAnime.length - 1 ? 0 : prevIndex + 1
       );
     }, 5000);
     return () => clearInterval(timer);
-  }, [featuredAnime.length]);
+  }, [featuredAnime]);
 
   if (!featuredAnime || featuredAnime.length === 0) return null;
 
@@ -31,11 +31,16 @@ export default function FeaturedSlider({ featuredAnime }) {
 
   return (
     <div className="relative w-full h-100 md:h-125 rounded-xl overflow-hidden border border-(--color-border-custom) group">
-      
       {/* Background Image/Banner Placeholder */}
       <div className="absolute inset-0 bg-linear-to-t from-(--color-bg-main) via-bg-main/80 to-transparent z-10" />
       <div className="absolute inset-0 bg-(--color-bg-secondary) flex items-center justify-center z-0">
-        <span className="text-(--color-border-custom)">Banner Image</span>
+        {currentAnime.bannerUrl ? (
+           <img src={currentAnime.bannerUrl} alt={currentAnime.title} className="w-full h-full object-cover" />
+        ) : currentAnime.posterUrl ? (
+           <img src={currentAnime.posterUrl} alt={currentAnime.title} className="w-full h-full object-cover blur-sm opacity-50" />
+        ) : (
+           <span className="text-(--color-border-custom)">Banner Image</span>
+        )}
       </div>
 
       {/* Content */}
@@ -46,9 +51,11 @@ export default function FeaturedSlider({ featuredAnime }) {
         <h2 className="text-3xl md:text-5xl font-extrabold text-(--color-text-primary) mb-4 line-clamp-2">
           {currentAnime.title}
         </h2>
-        <p className="text-(--color-text-secondary) text-sm md:text-base mb-6 line-clamp-3">
-          {currentAnime.synopsis}
-        </p>
+        {currentAnime.synopsis && (
+          <p className="text-(--color-text-secondary) text-sm md:text-base mb-6 line-clamp-3">
+            {currentAnime.synopsis}
+          </p>
+        )}
         <div className="flex items-center gap-4">
           <Link 
             href={`/watch/${currentAnime.slug}-episode-1`}
