@@ -3,12 +3,14 @@ import { prisma } from "@/lib/prisma";
 import crypto from "crypto";
 import nodemailer from "nodemailer";
 
-// 1. Configure the email transporter
+// Brevo SMTP Configuration
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: process.env.BREVO_SMTP_HOST,
+  port: parseInt(process.env.BREVO_SMTP_PORT || "587"),
+  secure: false,
   auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
+    user: process.env.BREVO_SMTP_USER,
+    pass: process.env.BREVO_SMTP_PASS,
   },
 });
 
@@ -26,51 +28,42 @@ export async function POST(request) {
       return NextResponse.json({ error: "No account found with this email" }, { status: 404 });
     }
 
-    // Generate a random token
     const token = crypto.randomBytes(32).toString("hex");
     const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
 
-    // Delete any existing tokens for this user
     await prisma.passwordResetToken.deleteMany({
       where: { userId: user.id }
     });
 
-    // Save the new token
     await prisma.passwordResetToken.create({
       data: { userId: user.id, token, expiresAt }
     });
 
-    // Create the reset link
     const resetLink = `http://localhost:3000/reset-password?token=${token}`;
 
-    // 2. Send the email
     try {
       await transporter.sendMail({
-        from: `"AIME Support" <${process.env.EMAIL_USER}>`,
-        to: user.email,
+        from: `"AIME Support" <${process.env.MAIL_FROM}>`,
+        to: user.email, // Sends to the user's real Gmail
         subject: "Reset Your AIME Password",
         html: `
-          <div style="background-color: #0B0D19; color: #F5F2E9; padding: 20px; font-family: sans-serif;">
+          <div style="background-color: #0B0D19; color: #F5F2E9; padding: 20px; font-family: sans-serif; border-radius: 8px;">
             <h2 style="color: #C9A44C;">AIME Password Reset</h2>
             <p>You requested to reset your password. Click the button below to set a new one:</p>
-            <a href="${resetLink}" style="background-color: #C9A44C; color: #0B0D19; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block; margin: 20px 0;">
+            <a href="${resetLink}" style="background-color: #C9A44C; color: #0B0D19; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block; margin: 20px 0;">
               Reset Password
             </a>
-            <p>If you didn't request this, you can safely ignore this email.</p>
-            <p style="font-size: 12px; color: #A3A6B5;">This link expires in 1 hour.</p>
+            <p style="font-size: 12px; color: #A3A6B5;">This link expires in 1 hour. If you didn't request this, please ignore this email.</p>
           </div>
         `,
       });
     } catch (emailError) {
-      console.error("Failed to send email:", emailError);
-      // We don't fail the request if the email fails, but we log it.
+      console.error("Failed to send reset email:", emailError);
     }
 
-    // Return success and the link for local testing
     return NextResponse.json({ 
       success: true, 
-      message: "Password reset link sent to your email!",
-      resetLink: resetLink // Keep this so you can still test locally
+      message: "Password reset link sent to your email!" 
     });
 
   } catch (error) {
