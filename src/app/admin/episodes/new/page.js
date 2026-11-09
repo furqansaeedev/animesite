@@ -13,6 +13,7 @@ export default function AddEpisodePage() {
   
   const [formData, setFormData] = useState({
     animeId: "",
+    seasonNumber: 1,
     episodeNumber: 1,
     title: "",
     videoUrl: "",
@@ -42,7 +43,7 @@ export default function AddEpisodePage() {
     const { name, value } = e.target;
     setFormData({ 
       ...formData, 
-      [name]: name === "episodeNumber" ? Number(value) : value 
+      [name]: (name === "episodeNumber" || name === "seasonNumber") ? Number(value) : value 
     });
   };
 
@@ -109,7 +110,16 @@ export default function AddEpisodePage() {
             </select>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-(--color-text-primary) mb-2">Season Number</label>
+              <input 
+                type="number" name="seasonNumber" value={formData.seasonNumber} onChange={handleChange} min="1"
+                className="w-full bg-(--color-bg-secondary) text-(--color-text-primary) text-sm rounded-lg py-3 px-4 border border-(--color-border-custom) focus:outline-none focus:border-(--color-gold-primary) transition-colors"
+                required
+              />
+            </div>
+            
             <div>
               <label className="block text-sm font-medium text-(--color-text-primary) mb-2">Episode Number</label>
               <input 

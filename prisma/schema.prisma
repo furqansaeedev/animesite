@@ -13,9 +13,9 @@ model User {
   id                String    @id @default(cuid())
   email             String    @unique
   passwordHash      String
-  role              String    @default("USER") // "USER" or "ADMIN"
-  isVerified        Boolean   @default(false) // <-- Added for email verification
-  verificationToken String?   @unique         // <-- Added for email verification
+  role              String    @default("USER")
+  isVerified        Boolean   @default(false)
+  verificationToken String?   @unique
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
 
@@ -67,13 +67,13 @@ model Anime {
   synopsis         String?
   posterUrl        String?
   bannerUrl        String?
-  type             String?   // TV, Movie, OVA, etc.
+  type             String?
   season           String?
   releaseYear      Int?
-  status           String?   // Airing, Finished, Upcoming
+  status           String?
   duration         String?
   score            Float?
-  quality          String?   // HD, 4K
+  quality          String?
   totalEpisodes    Int?
   featured         Boolean   @default(false)
   createdAt        DateTime  @default(now())
@@ -113,11 +113,12 @@ model Studio {
 model Episode {
   id            String    @id @default(cuid())
   animeId       String
+  seasonNumber  Int       @default(1) // <--- ADDED
   episodeNumber Int
   title         String?
   thumbnail     String?
-  videoUrl      String?   // Authorized video source
-  downloadUrls  Json?     // { "1080p": { url: "...", size: "1.2GB" } }
+  videoUrl      String?   
+  downloadUrls  Json?     
   releaseDate   DateTime?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
@@ -125,7 +126,7 @@ model Episode {
   anime         Anime     @relation(fields: [animeId], references: [id], onDelete: Cascade)
   progress      WatchProgress[]
 
-  @@unique([animeId, episodeNumber])
+  @@unique([animeId, seasonNumber, episodeNumber]) // <--- UPDATED
 }
 
 // --- USER INTERACTION MODELS ---

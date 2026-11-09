@@ -1,10 +1,12 @@
 import WatchUI from "./WatchUI";
 import { prisma } from "@/lib/prisma";
 
-export default async function WatchPage({ params }) {
+export default async function WatchPage({ params, searchParams }) {
   const { episodeId } = await params;
+  const { season } = await searchParams;
+  
+  const seasonNumber = parseInt(season) || 1;
 
-  // Safely extract slug and episode number
   const episodeMatch = episodeId.match(/(.+)-episode-(\d+)/);
   
   let animeSlug = "unknown";
@@ -15,22 +17,22 @@ export default async function WatchPage({ params }) {
     currentEpNum = parseInt(episodeMatch[2]);
   }
 
-  // Fetch from database
+  // Fetch anime with ONLY the episodes from the selected season
   const anime = await prisma.anime.findUnique({
     where: { slug: animeSlug },
     include: {
-      episodes: { orderBy: { episodeNumber: "asc" } },
+      episodes: { 
+        where: { seasonNumber: seasonNumber },
+        orderBy: { episodeNumber: "asc" } 
+      },
     }
   });
 
-  // If the anime exists, use its title. Otherwise, fallback to a formatted slug
   const title = anime ? anime.title : animeSlug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
   
-  // Find the episode
   const episodes = anime ? anime.episodes : [];
   const currentEpisode = episodes.find(ep => ep.episodeNumber === currentEpNum);
 
-  // If no episode is found, we still render the UI but without a specific video URL
   const videoUrl = currentEpisode?.videoUrl || "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
 
   const currentIndex = episodes.findIndex(ep => ep.episodeNumber === currentEpNum);
@@ -47,6 +49,7 @@ export default async function WatchPage({ params }) {
       prevEpisode={prevEpisode}
       nextEpisode={nextEpisode}
       videoUrl={videoUrl} 
+      seasonNumber={seasonNumber}
     />
   );
 }

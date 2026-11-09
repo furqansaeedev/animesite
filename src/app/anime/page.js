@@ -15,13 +15,16 @@ export default async function AnimeListing({ searchParams }) {
   const limit = 12;
   const skip = (page - 1) * limit;
 
+  // Build Prisma Query
   const where = {
     AND: [
-      search ? { title: { contains: search, mode: "insensitive" } } : {},
+      // CHANGED to 'startsWith' so the A-Z footer navigation works correctly
+      search ? { title: { startsWith: search, mode: "insensitive" } } : {},
       type ? { type: type } : {},
     ]
   };
 
+  // Build Sort Order
   let orderBy = { createdAt: "desc" };
   if (sort === "popular") orderBy = { score: "desc" };
   if (sort === "az") orderBy = { title: "asc" };
@@ -54,7 +57,7 @@ export default async function AnimeListing({ searchParams }) {
           <h2 className="text-xl font-bold text-(--color-text-primary) mb-2">No results found</h2>
           <p className="text-(--color-text-secondary) max-w-md">
             {search 
-              ? `We couldn't find any anime matching "${search}". Try a different search term or reset the filters.`
+              ? `We couldn't find any anime starting with "${search}". Try a different search term or reset the filters.`
               : "No anime match the selected filters. Try resetting the filters."}
           </p>
         </div>

@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { z } from "zod";
 
 async function checkAdmin() {
   const session = await getSession();
@@ -25,7 +24,6 @@ export async function POST(request) {
   try {
     const body = await request.json();
     
-    // Package download links into JSON format for the database
     const downloadUrls = {
       "1080p": { url: body.dl1080p || "", size: body.size1080p || "" },
       "720p": { url: body.dl720p || "", size: body.size720p || "" },
@@ -35,6 +33,7 @@ export async function POST(request) {
     const newEpisode = await prisma.episode.create({
       data: {
         animeId: body.animeId,
+        seasonNumber: Number(body.seasonNumber),
         episodeNumber: Number(body.episodeNumber),
         title: body.title,
         videoUrl: body.videoUrl,
