@@ -25,9 +25,10 @@ export async function POST(request) {
     const body = await request.json();
     
     const downloadUrls = {
-      "1080p": { url: body.dl1080p || "", size: body.size1080p || "" },
       "720p": { url: body.dl720p || "", size: body.size720p || "" },
       "480p": { url: body.dl480p || "", size: body.size480p || "" },
+      "360p": { url: body.dl360p || "", size: body.size360p || "" },
+      "240p": { url: body.dl240p || "", size: body.size240p || "" },
     };
 
     const newEpisode = await prisma.episode.create({

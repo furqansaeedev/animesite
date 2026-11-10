@@ -25,7 +25,6 @@ export default async function WatchPage({ params, searchParams }) {
   });
 
   if (!anime) {
-    // Handle not found (optional, but recommended)
     return <div className="text-white p-10">Anime not found</div>;
   }
 
@@ -37,17 +36,18 @@ export default async function WatchPage({ params, searchParams }) {
   const currentSeasonEpisodes = allEpisodes.filter(ep => (ep.seasonNumber || 1) === seasonNumber);
   const currentEpisode = currentSeasonEpisodes.find(ep => ep.episodeNumber === currentEpNum);
 
-  const videoUrl = currentEpisode?.videoUrl || "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
+  // SAFE FALLBACK: If no video URL exists, use a test video so the player doesn't crash
+  const safeVideoUrl = currentEpisode?.videoUrl || "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
 
   const currentIndex = currentSeasonEpisodes.findIndex(ep => ep.episodeNumber === currentEpNum);
   const prevEpisode = currentIndex > 0 ? `${animeSlug}-episode-${currentSeasonEpisodes[currentIndex - 1].episodeNumber}` : null;
   const nextEpisode = currentIndex !== -1 && currentIndex < currentSeasonEpisodes.length - 1 ? `${animeSlug}-episode-${currentSeasonEpisodes[currentIndex + 1].episodeNumber}` : null;
 
-  // Fetch Recommended Series (6 random anime excluding the current one)
+  // Fetch Recommended Series
   const recommendedSeries = await prisma.anime.findMany({
     where: { id: { not: anime.id } },
     take: 6,
-    orderBy: { score: "desc" } // Or just random
+    orderBy: { score: "desc" }
   });
 
   return (
@@ -59,7 +59,7 @@ export default async function WatchPage({ params, searchParams }) {
       episodes={currentSeasonEpisodes}
       prevEpisode={prevEpisode}
       nextEpisode={nextEpisode}
-      videoUrl={videoUrl} 
+      videoUrl={safeVideoUrl} // <-- Passing the safe URL
       seasonNumber={seasonNumber}
       availableSeasons={availableSeasons}
       recommendedSeries={recommendedSeries}

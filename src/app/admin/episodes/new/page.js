@@ -17,12 +17,16 @@ export default function AddEpisodePage() {
     episodeNumber: 1,
     title: "",
     videoUrl: "",
-    dl1080p: "",
+    // Download Links Updated
     dl720p: "",
     dl480p: "",
-    size1080p: "1.2 GB",
-    size720p: "650 MB",
-    size480p: "350 MB",
+    dl360p: "",
+    dl240p: "",
+    // Sizes Updated
+    size720p: "720 MB",
+    size480p: "480 MB",
+    size360p: "360 MB",
+    size240p: "240 MB",
   });
 
   useEffect(() => {
@@ -144,7 +148,7 @@ export default function AddEpisodePage() {
             <input 
               type="text" name="videoUrl" value={formData.videoUrl} onChange={handleChange}
               className="w-full bg-(--color-bg-secondary) text-(--color-text-primary) text-sm rounded-lg py-3 px-4 border border-(--color-border-custom) focus:outline-none focus:border-(--color-gold-primary) transition-colors"
-              placeholder="e.g. https://u.pone.rs/podmbdrl.mp4"
+              placeholder="e.g. https://www.w3schools.com/html/mov_bbb.mp4"
               required
             />
           </div>
@@ -152,17 +156,6 @@ export default function AddEpisodePage() {
           <div className="mt-6 border-t border-(--color-border-custom) pt-6">
             <h3 className="text-lg font-bold text-(--color-gold-primary) mb-4">Download Links (Optional)</h3>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <div>
-                <label className="block text-sm font-medium text-(--color-text-primary) mb-2">1080p Link</label>
-                <input type="text" name="dl1080p" value={formData.dl1080p} onChange={handleChange} className="w-full bg-(--color-bg-secondary) text-(--color-text-primary) text-sm rounded-lg py-3 px-4 border border-(--color-border-custom)" placeholder="https://..." />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-(--color-text-primary) mb-2">1080p Size</label>
-                <input type="text" name="size1080p" value={formData.size1080p} onChange={handleChange} className="w-full bg-(--color-bg-secondary) text-(--color-text-primary) text-sm rounded-lg py-3 px-4 border border-(--color-border-custom)" />
-              </div>
-            </div>
-
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div>
                 <label className="block text-sm font-medium text-(--color-text-primary) mb-2">720p Link</label>
@@ -182,6 +175,28 @@ export default function AddEpisodePage() {
               <div>
                 <label className="block text-sm font-medium text-(--color-text-primary) mb-2">480p Size</label>
                 <input type="text" name="size480p" value={formData.size480p} onChange={handleChange} className="w-full bg-(--color-bg-secondary) text-(--color-text-primary) text-sm rounded-lg py-3 px-4 border border-(--color-border-custom)" />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div>
+                <label className="block text-sm font-medium text-(--color-text-primary) mb-2">360p Link</label>
+                <input type="text" name="dl360p" value={formData.dl360p} onChange={handleChange} className="w-full bg-(--color-bg-secondary) text-(--color-text-primary) text-sm rounded-lg py-3 px-4 border border-(--color-border-custom)" placeholder="https://..." />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-(--color-text-primary) mb-2">360p Size</label>
+                <input type="text" name="size360p" value={formData.size360p} onChange={handleChange} className="w-full bg-(--color-bg-secondary) text-(--color-text-primary) text-sm rounded-lg py-3 px-4 border border-(--color-border-custom)" />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div>
+                <label className="block text-sm font-medium text-(--color-text-primary) mb-2">240p Link</label>
+                <input type="text" name="dl240p" value={formData.dl240p} onChange={handleChange} className="w-full bg-(--color-bg-secondary) text-(--color-text-primary) text-sm rounded-lg py-3 px-4 border border-(--color-border-custom)" placeholder="https://..." />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-(--color-text-primary) mb-2">240p Size</label>
+                <input type="text" name="size240p" value={formData.size240p} onChange={handleChange} className="w-full bg-(--color-bg-secondary) text-(--color-text-primary) text-sm rounded-lg py-3 px-4 border border-(--color-border-custom)" />
               </div>
             </div>
           </div>

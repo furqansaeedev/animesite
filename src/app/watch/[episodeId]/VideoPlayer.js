@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Play, Pause, Volume2, VolumeX, Maximize, Settings, PictureInPicture, RotateCcw, RotateCw, Check, PlayCircle } from "lucide-react";
+import { Play, Pause, Volume2, VolumeX, Maximize, Settings, PictureInPicture, RotateCcw, RotateCw, Check, SkipForward } from "lucide-react";
 
 export default function VideoPlayer({ videoUrl, episodeId, onVideoEnded }) {
   const videoRef = useRef(null);
@@ -18,58 +18,30 @@ export default function VideoPlayer({ videoUrl, episodeId, onVideoEnded }) {
   
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
   const [activeQuality, setActiveQuality] = useState("Auto");
-  const [autoPlay, setAutoPlay] = useState(false);
+  
+  // Auto Next State
   const [autoNext, setAutoNext] = useState(true);
 
-  const [currentSrc, setCurrentSrc] = useState(videoUrl);
+  // Load Auto Next setting from localStorage
+  useEffect(() => {
+    const savedAutoNext = localStorage.getItem("aime_autoNext");
+    if (savedAutoNext !== null) setAutoNext(savedAutoNext === "true");
+  }, []);
+
+  const toggleAutoNext = () => {
+    const newValue = !autoNext;
+    setAutoNext(newValue);
+    localStorage.setItem("aime_autoNext", newValue.toString());
+  };
 
   const videoSources = {
     "720p": videoUrl, 
     "480p": videoUrl, 
+    "360p": videoUrl, 
+    "240p": "https://files.catbox.moe/k1uuea.mp4", 
   };
 
-  // 1. Fetch existing progress on load
-  useEffect(() => {
-    if (!episodeId) return;
-    
-    const fetchProgress = async () => {
-      try {
-        const res = await fetch(`/api/user/progress?episodeId=${episodeId}`);
-        if (res.ok) {
-          const data = await res.json();
-          if (data.progress && data.progress.progressSeconds > 0) {
-            videoRef.current.currentTime = data.progress.progressSeconds;
-          }
-        }
-      } catch (error) {
-        console.log("Could not fetch progress");
-      }
-    };
-    fetchProgress();
-  }, [episodeId]);
-
-  // 2. Save progress every 5 seconds
-  useEffect(() => {
-    if (!episodeId) return;
-
-    const interval = setInterval(() => {
-      if (videoRef.current && !videoRef.current.paused) {
-        const currentTime = Math.floor(videoRef.current.currentTime);
-        
-        fetch("/api/user/progress", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ 
-            episodeId, 
-            progressSeconds: currentTime,
-            completed: false
-          }),
-        }).catch(() => console.log("Failed to save progress"));
-      }
-    }, 5000);
-
-    return () => clearInterval(interval);
-  }, [episodeId]);
+  const [currentSrc, setCurrentSrc] = useState(videoUrl);
 
   const formatTime = (time) => {
     if (isNaN(time)) return "00:00";
@@ -146,9 +118,14 @@ export default function VideoPlayer({ videoUrl, episodeId, onVideoEnded }) {
   };
 
   const changeQuality = (quality) => {
-    const newSrc = quality === "Auto" ? videoUrl : (videoSources[quality] || videoUrl);
     const currentPos = videoRef.current.currentTime;
-    
+    const wasPlaying = !videoRef.current.paused;
+
+    let newSrc = videoUrl;
+    if (quality !== "Auto" && videoSources[quality]) {
+      newSrc = videoSources[quality];
+    }
+
     setActiveQuality(quality);
     setCurrentSrc(newSrc);
     setActiveMenu("main");
@@ -157,9 +134,9 @@ export default function VideoPlayer({ videoUrl, episodeId, onVideoEnded }) {
       if (videoRef.current) {
         videoRef.current.currentTime = currentPos;
         videoRef.current.playbackRate = playbackSpeed;
-        if (isPlaying) videoRef.current.play();
+        if (wasPlaying) videoRef.current.play();
       }
-    }, 100);
+    }, 150);
   };
 
   const handleEnded = () => {
@@ -189,14 +166,13 @@ export default function VideoPlayer({ videoUrl, episodeId, onVideoEnded }) {
       <video
         ref={videoRef}
         className="w-full h-full object-contain"
-        src={currentSrc}
+        src={currentSrc} 
         onClick={togglePlay}
         onTimeUpdate={handleTimeUpdate}
         onLoadedMetadata={handleLoadedMetadata}
         onEnded={handleEnded}
         onPlay={() => setIsPlaying(true)}
         onPause={() => setIsPlaying(false)}
-        autoPlay={autoPlay}
       />
 
       <div className="absolute top-4 right-4 z-10 flex items-center gap-2">
@@ -278,11 +254,21 @@ export default function VideoPlayer({ videoUrl, episodeId, onVideoEnded }) {
               {isSettingsOpen && (
                 <div className="absolute bottom-10 right-0 w-64 bg-[#1A1A1A] border border-gray-700 rounded-lg shadow-2xl text-sm overflow-hidden flex flex-col">
                   
+                  {/* MAIN MENU (Auto Next is now directly here) */}
                   {activeMenu === "main" && (
                     <div className="flex flex-col py-2">
-                      <button onClick={() => setActiveMenu("playback")} className="flex items-center justify-between px-4 py-3 hover:bg-gray-800 transition-colors">
-                        <span className="flex items-center gap-3"><PlayCircle size={16}/> Playback Settings</span>
+                      
+                      <button onClick={toggleAutoNext} className="flex items-center justify-between px-4 py-3 hover:bg-gray-800 transition-colors">
+                        <span className="flex items-center gap-3">
+                          <SkipForward size={16}/> Auto Next
+                        </span>
+                        <div className={`w-8 h-4 rounded-full relative transition-colors ${autoNext ? "bg-(--color-gold-primary)" : "bg-gray-600"}`}>
+                          <span className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-all ${autoNext ? "left-4.5" : "left-0.5"}`} />
+                        </div>
                       </button>
+
+                      <div className="w-full h-px bg-gray-700 my-1"></div>
+
                       <button onClick={() => setActiveMenu("speed")} className="flex items-center justify-between px-4 py-3 hover:bg-gray-800 transition-colors">
                         <span className="flex items-center gap-3"><RotateCcw size={16}/> Playback Speed</span>
                         <span className="text-gray-400 text-xs">{playbackSpeed === 1 ? "Normal" : `${playbackSpeed}x`}</span>
@@ -294,26 +280,7 @@ export default function VideoPlayer({ videoUrl, episodeId, onVideoEnded }) {
                     </div>
                   )}
 
-                  {activeMenu === "playback" && (
-                    <div className="flex flex-col py-2">
-                      <button onClick={() => setActiveMenu("main")} className="px-4 py-2 text-gray-400 hover:text-white text-left border-b border-gray-700 mb-1">&larr; Back</button>
-                      
-                      <button onClick={() => setAutoPlay(!autoPlay)} className="flex items-center justify-between px-4 py-3 hover:bg-gray-800 transition-colors">
-                        <span>Auto Play Video</span>
-                        <div className={`w-8 h-4 rounded-full relative transition-colors ${autoPlay ? "bg-(--color-gold-primary)" : "bg-gray-600"}`}>
-                          <span className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-all ${autoPlay ? "left-4.5" : "left-0.5"}`} />
-                        </div>
-                      </button>
-
-                      <button onClick={() => setAutoNext(!autoNext)} className="flex items-center justify-between px-4 py-3 hover:bg-gray-800 transition-colors">
-                        <span>Auto Next Episode</span>
-                        <div className={`w-8 h-4 rounded-full relative transition-colors ${autoNext ? "bg-(--color-gold-primary)" : "bg-gray-600"}`}>
-                          <span className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-all ${autoNext ? "left-4.5" : "left-0.5"}`} />
-                        </div>
-                      </button>
-                    </div>
-                  )}
-
+                  {/* SPEED MENU */}
                   {activeMenu === "speed" && (
                     <div className="flex flex-col py-2 max-h-64 overflow-y-auto">
                       <button onClick={() => setActiveMenu("main")} className="px-4 py-2 text-gray-400 hover:text-white text-left border-b border-gray-700 mb-1">&larr; Back</button>
@@ -330,6 +297,7 @@ export default function VideoPlayer({ videoUrl, episodeId, onVideoEnded }) {
                     </div>
                   )}
 
+                  {/* QUALITY MENU */}
                   {activeMenu === "quality" && (
                     <div className="flex flex-col py-2 max-h-64 overflow-y-auto">
                       <button onClick={() => setActiveMenu("main")} className="px-4 py-2 text-gray-400 hover:text-white text-left border-b border-gray-700 mb-1">&larr; Back</button>
