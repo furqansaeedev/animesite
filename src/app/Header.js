@@ -13,8 +13,6 @@ export default function Header() {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  
-  // Initialize search query from URL
   const [searchQuery, setSearchQuery] = useState(searchParams.get("search") || "");
 
   const userMenuRef = useRef(null);
@@ -54,7 +52,6 @@ export default function Header() {
     e.preventDefault();
     if (searchQuery.trim()) {
       router.push(`/anime?search=${encodeURIComponent(searchQuery.trim())}`);
-      // Clear the header search bar right after pushing the route
       setSearchQuery(""); 
     } else {
       router.push(`/anime`);
@@ -94,12 +91,30 @@ export default function Header() {
             </Link>
           </div>
 
+          {/* Desktop Navigation with Active State */}
           <nav className="hidden md:flex items-center gap-6">
-            {navLinks.map((link) => (
-              <Link key={link.name} href={link.href} className="text-sm font-medium text-(--color-text-secondary) hover:text-(--color-gold-primary) transition-colors">
-                {link.name}
-              </Link>
-            ))}
+            {navLinks.map((link) => {
+              // Check if the current path matches the link
+              const isActive = pathname === link.href;
+              
+              return (
+                <Link 
+                  key={link.name} 
+                  href={link.href} 
+                  className={`text-sm font-medium transition-colors relative py-1 ${
+                    isActive 
+                      ? "text-(--color-gold-primary)" 
+                      : "text-(--color-text-secondary) hover:text-(--color-gold-primary)"
+                  }`}
+                >
+                  {link.name}
+                  {/* The Gold Underline for Active State */}
+                  {isActive && (
+                    <span className="absolute bottom-0 left-0 w-full h-0.5 bg-(--color-gold-primary) rounded-full"></span>
+                  )}
+                </Link>
+              );
+            })}
           </nav>
 
           <div className="flex items-center gap-4">
@@ -120,7 +135,11 @@ export default function Header() {
             ) : user ? (
               <div className="flex items-center gap-3">
                 {user.role === "ADMIN" && (
-                  <Link href="/admin" className="hidden sm:flex items-center gap-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/50 px-3 py-1.5 rounded-full text-sm font-bold transition-colors">
+                  <Link href="/admin" className={`hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-bold transition-colors border ${
+                    pathname.startsWith("/admin") 
+                      ? "bg-red-500/20 text-red-300 border-red-500" 
+                      : "bg-red-500/10 hover:bg-red-500/20 text-red-400 border-red-500/50"
+                  }`}>
                     <Shield size={16} /> Admin Panel
                   </Link>
                 )}
@@ -167,9 +186,20 @@ export default function Header() {
             />
             <Search className="absolute left-3 top-2.5 text-(--color-text-secondary)" size={16} />
           </form>
-          {navLinks.map((link) => (
-            <Link key={link.name} href={link.href} className="block text-sm font-medium text-(--color-text-secondary) hover:text-(--color-gold-primary) py-2">{link.name}</Link>
-          ))}
+          {navLinks.map((link) => {
+             const isActive = pathname === link.href;
+             return (
+              <Link 
+                key={link.name} 
+                href={link.href} 
+                className={`block text-sm font-medium py-2 ${
+                  isActive ? "text-(--color-gold-primary)" : "text-(--color-text-secondary) hover:text-(--color-gold-primary)"
+                }`}
+              >
+                {link.name}
+              </Link>
+             );
+          })}
           {user && user.role === "ADMIN" && (
              <Link href="/admin" className="flex items-center gap-2 text-red-400 font-bold py-2 border-t border-(--color-border-custom) pt-4"><Shield size={16} /> Admin Panel</Link>
           )}

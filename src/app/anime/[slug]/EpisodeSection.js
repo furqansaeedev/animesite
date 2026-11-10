@@ -1,15 +1,25 @@
 "use client";
 
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Play, ChevronDown } from "lucide-react";
 
 export default function EpisodeSection({ animeSlug, episodes }) {
+  const searchParams = useSearchParams();
+  
   // Group episodes by season
   const seasons = [...new Set(episodes.map((ep) => ep.seasonNumber || 1))].sort((a, b) => a - b);
   
-  // Default to the latest season
-  const [selectedSeason, setSelectedSeason] = useState(seasons.length > 0 ? seasons[seasons.length - 1] : 1);
+  // 1. Check if the URL has a ?season= parameter (e.g. if the user clicked back)
+  const urlSeason = parseInt(searchParams.get("season"));
+  
+  // 2. Default to the URL season, or the latest season if not found
+  const defaultSeason = urlSeason && seasons.includes(urlSeason) 
+    ? urlSeason 
+    : (seasons.length > 0 ? seasons[seasons.length - 1] : 1);
+
+  const [selectedSeason, setSelectedSeason] = useState(defaultSeason);
   const [isOpen, setIsOpen] = useState(false);
 
   // Filter episodes for the selected season

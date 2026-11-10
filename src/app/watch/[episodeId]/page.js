@@ -17,27 +17,38 @@ export default async function WatchPage({ params, searchParams }) {
     currentEpNum = parseInt(episodeMatch[2]);
   }
 
-  // Fetch anime with ONLY the episodes from the selected season
   const anime = await prisma.anime.findUnique({
     where: { slug: animeSlug },
     include: {
-      episodes: { 
-        where: { seasonNumber: seasonNumber },
-        orderBy: { episodeNumber: "asc" } 
-      },
+      episodes: { orderBy: [{ seasonNumber: "asc" }, { episodeNumber: "asc" }] },
     }
   });
 
-  const title = anime ? anime.title : animeSlug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+  if (!anime) {
+    // Handle not found (optional, but recommended)
+    return <div className="text-white p-10">Anime not found</div>;
+  }
+
+  const title = anime.title;
+  const allEpisodes = anime.episodes;
   
-  const episodes = anime ? anime.episodes : [];
-  const currentEpisode = episodes.find(ep => ep.episodeNumber === currentEpNum);
+  const availableSeasons = [...new Set(allEpisodes.map(ep => ep.seasonNumber || 1))].sort((a, b) => a - b);
+
+  const currentSeasonEpisodes = allEpisodes.filter(ep => (ep.seasonNumber || 1) === seasonNumber);
+  const currentEpisode = currentSeasonEpisodes.find(ep => ep.episodeNumber === currentEpNum);
 
   const videoUrl = currentEpisode?.videoUrl || "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
 
-  const currentIndex = episodes.findIndex(ep => ep.episodeNumber === currentEpNum);
-  const prevEpisode = currentIndex > 0 ? `${animeSlug}-episode-${episodes[currentIndex - 1].episodeNumber}` : null;
-  const nextEpisode = currentIndex !== -1 && currentIndex < episodes.length - 1 ? `${animeSlug}-episode-${episodes[currentIndex + 1].episodeNumber}` : null;
+  const currentIndex = currentSeasonEpisodes.findIndex(ep => ep.episodeNumber === currentEpNum);
+  const prevEpisode = currentIndex > 0 ? `${animeSlug}-episode-${currentSeasonEpisodes[currentIndex - 1].episodeNumber}` : null;
+  const nextEpisode = currentIndex !== -1 && currentIndex < currentSeasonEpisodes.length - 1 ? `${animeSlug}-episode-${currentSeasonEpisodes[currentIndex + 1].episodeNumber}` : null;
+
+  // Fetch Recommended Series (6 random anime excluding the current one)
+  const recommendedSeries = await prisma.anime.findMany({
+    where: { id: { not: anime.id } },
+    take: 6,
+    orderBy: { score: "desc" } // Or just random
+  });
 
   return (
     <WatchUI 
@@ -45,11 +56,13 @@ export default async function WatchPage({ params, searchParams }) {
       animeSlug={animeSlug}
       currentEpNum={currentEpNum}
       formattedTitle={title}
-      episodes={episodes}
+      episodes={currentSeasonEpisodes}
       prevEpisode={prevEpisode}
       nextEpisode={nextEpisode}
       videoUrl={videoUrl} 
       seasonNumber={seasonNumber}
+      availableSeasons={availableSeasons}
+      recommendedSeries={recommendedSeries}
     />
   );
 }
